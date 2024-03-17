@@ -1,0 +1,11 @@
+build/
+docs/
+.vscode/
+.mypy_cache/
+__pycache__/
+
+*.huff
+*.jpg
+*.txt
+
+!data/*

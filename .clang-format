@@ -1,0 +1,7 @@
+BasedOnStyle: LLVM
+AlignAfterOpenBracket: BlockIndent
+AllowShortFunctionsOnASingleLine: None
+ColumnLimit: 110
+ContinuationIndentWidth: 2
+IndentWidth: 2
+InsertBraces: true
