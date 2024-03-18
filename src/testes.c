@@ -125,12 +125,14 @@ void testar_huffman_arquivo(char *caminho_in, char *caminho_out_esperado, Funcao
 void testar_comprimir() {
   testar_huffman_arquivo("data/abcdef.txt", "data/abcdef.txt.huff", comprimir);
   testar_huffman_arquivo("data/a10.txt", "data/a10.txt.huff", comprimir);
+  testar_huffman_arquivo("data/flaflu.mp3", "data/flaflu.mp3.huff", comprimir);
   testar_huffman_arquivo("data/sky.jpg", "data/sky.jpg.huff", comprimir);
 }
 
 void testar_descomprimir() {
   testar_huffman_arquivo("data/abcdef.txt.huff", "data/abcdef.txt", descomprimir);
   testar_huffman_arquivo("data/a10.txt.huff", "data/a10.txt", descomprimir);
+  testar_huffman_arquivo("data/flaflu.mp3.huff", "data/flaflu.mp3", descomprimir);
   testar_huffman_arquivo("data/sky.jpg.huff", "data/sky.jpg", descomprimir);
 }
 

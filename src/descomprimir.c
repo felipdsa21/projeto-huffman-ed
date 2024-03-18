@@ -9,19 +9,16 @@ void descomprimir(FILE *arquivo_in, FILE *arquivo_out) {
   // uint16_t tamanho;
   uint8_t cabecalho[2], lixo;
 
-  // Lê o cabeçalho e extrai o lixo e o tamanho da árvore
   fread(&cabecalho, 1, sizeof(cabecalho), arquivo_in);
   lixo = cabecalho[0] >> 5;
   // tamanho = (cabecalho[0] & 0x1F) << 8 | cabecalho[1];
 
-  // Lê a árvore em pré-ordem
   arvore = ler_arvore_preordem(arquivo_in);
 
   if (arvore_bin_e_folha(arvore)) {
     // Caso especial de existir apenas um tipo de caractere (repetido ou não) no arquivo
     descomprimir_com_caractere(arquivo_in, arquivo_out, arvore, lixo);
   } else {
-    // Descomprime o conteúdo normalmente
     descomprimir_com_arvore(arquivo_in, arquivo_out, arvore, lixo);
   }
 
@@ -38,16 +35,13 @@ ArvoreBin *ler_arvore_preordem(FILE *arquivo) {
   escape = caractere == '\\'; // Testa se há um escape
 
   if (escape) {
-    // Se houver, pega o caractere escapado
     caractere = (uint8_t)fgetc(arquivo);
   }
 
   if (caractere == '*' && !escape) {
-    // Não é folha
     esquerda = ler_arvore_preordem(arquivo);
     direita = ler_arvore_preordem(arquivo);
   } else {
-    // Folha
     esquerda = direita = NULL;
   }
 
@@ -78,35 +72,27 @@ void descomprimir_com_arvore(FILE *arquivo_in, FILE *arquivo_out, ArvoreBin *arv
   // Começa a percorrer na raíz
   atual = arvore;
 
-  // Para cada caractere
   while ((caractere = fgetc(arquivo_in)) != EOF) {
-    // Testa se é o último
     ultimo_byte = pos == tamanho - 1;
 
-    // Se for, ignora os bits de lixo
+    // Se for o último byte, ignora os bits de lixo
     qtd_bits = ultimo_byte ? 8 - lixo : 8;
 
-    // Para cada bit
     for (i = 0; i < qtd_bits; i++) {
       if (is_bit_i_set(caractere, 7 - i)) {
-        // Se for 1, vai para o filho esquerdo do nó atual
         atual = arvore_bin_direita(atual);
       } else {
-        // Se for 0, vai para o filho direito
         atual = arvore_bin_esquerda(atual);
       }
 
-      // Se chegar numa folha
       if (arvore_bin_e_folha(atual)) {
-        // Escreve o caractere guardado nela
         fputc(ptr_para_uint8(arvore_bin_item(atual)), arquivo_out);
 
-        // E volta para a raíz da árvore
+        // Volta para a raíz da árvore
         atual = arvore;
       }
     }
 
-    // Aumenta o contador de posição
     pos++;
   }
 }

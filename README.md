@@ -1,4 +1,5 @@
 # Projeto de Estruturas de Dados
+- Apresentação sobre árvore rubro-negra
 - Implementação da codificação Huffman
 - Casos de teste para as estruturas usadas no Huffman
 - Plotagem e comparação de lista encadeada e árvore de busca binária

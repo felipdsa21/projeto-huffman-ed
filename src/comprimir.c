@@ -12,10 +12,7 @@ void comprimir(FILE *arquivo_in, FILE *arquivo_out) {
   uint16_t cabecalho, tamanho_arvore;
   uint8_t lixo;
 
-  // Lê todo o arquivo de entrada e guarda a frequência de cada caractere
   ler_frequencias(arquivo_in, freqs);
-
-  // Transforma as frequências em uma árvore Huffman
   arvore = transformar_frequencias_em_arvore(freqs);
 
   if (arvore_bin_e_folha(arvore)) {
@@ -23,11 +20,10 @@ void comprimir(FILE *arquivo_in, FILE *arquivo_out) {
     tabela[ptr_para_uint8(arvore_bin_item(arvore))].qtd_bits = 1;
     tabela[ptr_para_uint8(arvore_bin_item(arvore))].bits = 0;
   } else {
-    // Transforma a árvore em uma tabela
     transformar_arvore_em_tabela(arvore, tabela, 0, 0);
   }
 
-  // Pula os dois primeiros bytes no arquivo de saída e salva a tabela
+  // Pula os dois primeiros bytes no arquivo de saída para salvar a tabela
   fseek(arquivo_out, 2, SEEK_CUR);
   tamanho_arvore = salvar_arvore_preordem(arvore, arquivo_out);
 
@@ -156,38 +152,30 @@ uint8_t comprimir_com_tabela(FILE *arquivo_in, FILE *arquivo_out, Caminho tabela
 
   // Para cada caractere
   while ((caractere = fgetc(arquivo_in)) != EOF) {
-    // Pega o caminho
     caminho = tabela[caractere];
 
-    // Para cada bit do caminho
     for (i = 0; i < caminho.qtd_bits; i++) {
-      // Testa se é 1
       if (is_bit_i_set(caminho.bits, i)) {
-        // Se for, usa set_bit no byte compactado
+        // Se o bit for 1, usa set_bit no byte compactado
         bits = set_bit(bits, 7 - bit_atual);
       }
 
-      // Passa para o proximo bit do byte compactado
       bit_atual++;
 
-      // Se o byte estiver completo
+      // Se o byte compactado estiver completo
       if (bit_atual == 8) {
-        // Escreve na saída
         fputc(bits, arquivo_out);
-
-        // E inicia o próximo byte
         bits = 0;
         bit_atual = 0;
       }
     }
   }
 
-  // Se um byte imcompleto houver sobrado
+  // Se um byte incompleto houver sobrado
   if (bit_atual > 0) {
-    // Escreve na saída
     fputc(bits, arquivo_out);
   }
 
-  // E retorna a quantidade de bits incompletos como lixo
+  // Retorna a quantidade de bits incompletos como lixo
   return 8 - bit_atual;
 }
