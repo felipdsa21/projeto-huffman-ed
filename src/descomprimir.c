@@ -6,12 +6,12 @@
 
 void descomprimir(FILE *arquivo_in, FILE *arquivo_out) {
   ArvoreBin *arvore;
-  // uint16_t tamanho;
+  // uint16_t tamanho_arvore;
   uint8_t cabecalho[2], lixo;
 
   fread(&cabecalho, 1, sizeof(cabecalho), arquivo_in);
   lixo = cabecalho[0] >> 5;
-  // tamanho = (cabecalho[0] & 0x1F) << 8 | cabecalho[1];
+  // tamanho_arvore = (uint16_t)((cabecalho[0] & 0x1F) << 8) | cabecalho[1];
 
   arvore = ler_arvore_preordem(arquivo_in);
 
@@ -25,8 +25,8 @@ void descomprimir(FILE *arquivo_in, FILE *arquivo_out) {
   arvore_bin_desalocar(arvore);
 }
 
+// Adaptado de https://stackoverflow.com/a/4909298
 ArvoreBin *ler_arvore_preordem(FILE *arquivo) {
-  // Adaptado de https://stackoverflow.com/a/4909298
   ArvoreBin *esquerda, *direita;
   uint8_t caractere;
   bool escape;

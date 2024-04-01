@@ -33,7 +33,7 @@ void comprimir(FILE *arquivo_in, FILE *arquivo_out) {
 
   // Volta para o começo do arquivo de saída e salva o cabeçalho
   fseek(arquivo_out, 0, SEEK_SET);
-  cabecalho = lixo << 13 | tamanho_arvore;
+  cabecalho = (uint16_t)(lixo << 13) | tamanho_arvore;
   fputc(cabecalho >> 8, arquivo_out);
   fputc(cabecalho & 0xFF, arquivo_out);
 
@@ -157,7 +157,7 @@ uint8_t comprimir_com_tabela(FILE *arquivo_in, FILE *arquivo_out, Caminho tabela
     for (i = 0; i < caminho.qtd_bits; i++) {
       if (is_bit_i_set(caminho.bits, i)) {
         // Se o bit for 1, usa set_bit no byte compactado
-        bits = set_bit(bits, 7 - bit_atual);
+        bits = (uint8_t)set_bit(bits, 7 - bit_atual);
       }
 
       bit_atual++;

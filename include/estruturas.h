@@ -87,14 +87,6 @@ ArvoreBin *arvore_bin_criar(void *item, Desalocador desalocar, ArvoreBin *esquer
 void arvore_bin_desalocar(ArvoreBin *arvore);
 
 /**
- * Calcula a quantidade de nós que existe em uma árvore.
- * @memberof ArvoreBin
- * @param arvore a árvore
- * @return a quantidade de nós
- */
-size_t arvore_bin_tamanho(ArvoreBin *arvore);
-
-/**
  * Verifica se um nó de árvore é folha (não tem filhos).
  * @memberof ArvoreBin
  * @param arvore o nó
@@ -197,6 +189,6 @@ void *no_fila_prio_tomar_item(NoFilaPrio *no);
  *
  * @memberof NoFilaPrio
  * @param no o nó
- * @returns a prioridade do nó
+ * @return a prioridade do nó
  */
 long no_fila_prio_prioridade(NoFilaPrio *no);

@@ -20,14 +20,6 @@ void arvore_bin_desalocar(ArvoreBin *arvore) {
   }
 }
 
-size_t arvore_bin_tamanho(ArvoreBin *arvore) {
-  if (!arvore) {
-    return 0;
-  } else {
-    return arvore_bin_tamanho(arvore->esquerda) + arvore_bin_tamanho(arvore->direita) + 1;
-  }
-}
-
 bool arvore_bin_e_folha(ArvoreBin *arvore) {
   return !arvore->esquerda && !arvore->direita;
 }
@@ -58,7 +50,7 @@ void fila_prio_desalocar(FilaPrio *fila) {
   }
 
   atual = fila->inicio;
-  while (atual != NULL) {
+  while (atual) {
     prox = atual->prox;
     no_fila_prio_desalocar(atual);
     atual = prox;

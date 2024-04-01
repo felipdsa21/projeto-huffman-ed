@@ -7,12 +7,23 @@
 #include "estruturas.h"
 #include "utils.h"
 
+#define TAMANHO_ARRAY(x) (sizeof(x) / sizeof(*(x)))
+
 typedef struct Caso {
   const char *nome;
   CU_TestFunc funcao;
 } Caso;
 
-typedef void (*FuncaoHuffman)(FILE *arquivo_in, FILE *arquivo_out);
+typedef struct ArquivoTeste {
+  const char *caminho_in, *caminho_out;
+} ArquivoTeste;
+
+const ArquivoTeste arquivos_teste[] = {
+  {"data/a10.txt", "data/a10.txt.huff"},
+  {"data/abcdef.txt", "data/abcdef.txt.huff"},
+  {"data/flaflu.mp3", "data/flaflu.mp3.huff"},
+  {"data/sky.jpg", "data/sky.jpg.huff"},
+};
 
 void testar_arvore_bin() {
   ArvoreBin *arvore, *esquerda, *direita;
@@ -38,7 +49,7 @@ void testar_arvore_bin() {
   arvore_bin_desalocar(arvore);
 }
 
-void comparar_no_fila(NoFilaPrio *no, uint8_t item, unsigned prioridade) {
+void comparar_no_fila(NoFilaPrio *no, uint8_t item, long prioridade) {
   CU_ASSERT_PTR_NOT_NULL_FATAL(no);
   CU_ASSERT_EQUAL(ptr_para_uint8(no_fila_prio_item(no)), item);
   CU_ASSERT_EQUAL(no_fila_prio_prioridade(no), prioridade);
@@ -107,14 +118,21 @@ void comparar_arquivos(FILE *arquivo1, FILE *arquivo2) {
   }
 }
 
-void testar_huffman_arquivo(char *caminho_in, char *caminho_out_esperado, FuncaoHuffman funcao) {
+void testar_huffman_arquivo(
+  const char *caminho_in, const char *caminho_out_esperado, bool deve_descomprimir
+) {
   FILE *arquivo_in, *arquivo_out, *arquivo_out_esperado;
 
   arquivo_in = fopen(caminho_in, "rb");
   arquivo_out = tmpfile();
   arquivo_out_esperado = fopen(caminho_out_esperado, "rb");
 
-  funcao(arquivo_in, arquivo_out);
+  if (deve_descomprimir) {
+    descomprimir(arquivo_in, arquivo_out);
+  } else {
+    comprimir(arquivo_in, arquivo_out);
+  }
+
   comparar_arquivos(arquivo_out, arquivo_out_esperado);
 
   fclose(arquivo_in);
@@ -123,17 +141,19 @@ void testar_huffman_arquivo(char *caminho_in, char *caminho_out_esperado, Funcao
 }
 
 void testar_comprimir() {
-  testar_huffman_arquivo("data/abcdef.txt", "data/abcdef.txt.huff", comprimir);
-  testar_huffman_arquivo("data/a10.txt", "data/a10.txt.huff", comprimir);
-  testar_huffman_arquivo("data/flaflu.mp3", "data/flaflu.mp3.huff", comprimir);
-  testar_huffman_arquivo("data/sky.jpg", "data/sky.jpg.huff", comprimir);
+  size_t i;
+
+  for (i = 0; i < TAMANHO_ARRAY(arquivos_teste); i++) {
+    testar_huffman_arquivo(arquivos_teste[i].caminho_in, arquivos_teste[i].caminho_out, false);
+  }
 }
 
 void testar_descomprimir() {
-  testar_huffman_arquivo("data/abcdef.txt.huff", "data/abcdef.txt", descomprimir);
-  testar_huffman_arquivo("data/a10.txt.huff", "data/a10.txt", descomprimir);
-  testar_huffman_arquivo("data/flaflu.mp3.huff", "data/flaflu.mp3", descomprimir);
-  testar_huffman_arquivo("data/sky.jpg.huff", "data/sky.jpg", descomprimir);
+  size_t i;
+
+  for (i = 0; i < TAMANHO_ARRAY(arquivos_teste); i++) {
+    testar_huffman_arquivo(arquivos_teste[i].caminho_out, arquivos_teste[i].caminho_in, true);
+  }
 }
 
 int main() {
@@ -141,13 +161,13 @@ int main() {
   size_t i;
 
   if (CU_initialize_registry() != CUE_SUCCESS) {
-    return CU_get_error();
+    return (int)CU_get_error();
   }
 
   suite = CU_add_suite("Suite", NULL, NULL);
   if (!suite) {
     CU_cleanup_registry();
-    return CU_get_error();
+    return (int)CU_get_error();
   }
 
   Caso casos[] = {
@@ -157,15 +177,15 @@ int main() {
     {"Descomprimir", testar_descomprimir},
   };
 
-  for (i = 0; i < sizeof(casos) / sizeof(*casos); i++) {
+  for (i = 0; i < TAMANHO_ARRAY(casos); i++) {
     if (!CU_add_test(suite, casos[i].nome, casos[i].funcao)) {
       CU_cleanup_registry();
-      return CU_get_error();
+      return (int)CU_get_error();
     }
   }
 
   CU_basic_set_mode(CU_BRM_VERBOSE);
   CU_basic_run_tests();
   CU_cleanup_registry();
-  return CU_get_error();
+  return (int)CU_get_error();
 }
