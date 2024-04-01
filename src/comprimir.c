@@ -5,12 +5,12 @@
 #include "estruturas.h"
 #include "utils.h"
 
-void comprimir(FILE *arquivo_in, FILE *arquivo_out) {
+void comprimir(FILE *arquivo_in, FILE *arquivo_out, const char *extensao) {
   ArvoreBin *arvore;
   Caminho tabela[256];
   long freqs[256];
   uint16_t cabecalho, tamanho_arvore;
-  uint8_t lixo;
+  uint8_t tamanho_extensao, lixo;
 
   ler_frequencias(arquivo_in, freqs);
   arvore = transformar_frequencias_em_arvore(freqs);
@@ -26,6 +26,11 @@ void comprimir(FILE *arquivo_in, FILE *arquivo_out) {
   // Pula os dois primeiros bytes no arquivo de saída para salvar a tabela
   fseek(arquivo_out, 2, SEEK_CUR);
   tamanho_arvore = salvar_arvore_preordem(arvore, arquivo_out);
+
+  // Escreve a extensão e seu tamanho
+  tamanho_extensao = (uint8_t)(strlen(extensao) << 5);
+  fputc(tamanho_extensao, arquivo_out);
+  fputs(extensao, arquivo_out);
 
   // Volta para o começo do arquivo de entrada e comprime o contéudo
   fseek(arquivo_in, 0, SEEK_SET);

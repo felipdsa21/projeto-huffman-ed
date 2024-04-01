@@ -25,8 +25,9 @@ typedef struct Caminho {
  * Comprime um arquivo usando codificação de Huffman e escreve um cabeçalho e a tabela.
  * @param arquivo_in o arquivo descomprimido
  * @param arquivo_out o arquivo onde o conteúdo comprimido será salvo
+ * @param extensao a extensão do arquivo descomprimido
  */
-void comprimir(FILE *arquivo_in, FILE *arquivo_out);
+void comprimir(FILE *arquivo_in, FILE *arquivo_out, const char *extensao);
 
 /**
  * Lê um arquivo por completo e salva a frequência de cada caractere em um array.

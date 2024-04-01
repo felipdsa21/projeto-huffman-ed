@@ -5,8 +5,9 @@
 
 #include "comprimir.h"
 #include "descomprimir.h"
+#include "extensoes.h"
 
-const char MSG_USO[] = "Uso: huffman.exe [comprimir|descomprimir] [entrada] [saída]\n";
+const char MSG_USO[] = "Uso: huffman.exe [arquivo]\nCaso a extensão seja .huff, descomprime\n";
 
 void configurar_terminal() {
 #ifdef _WIN32
@@ -19,38 +20,41 @@ void configurar_terminal() {
 int main(int argc, char *argv[]) {
   FILE *arquivo_in, *arquivo_out;
   int ret;
-  char *acao, *caminho_in, *caminho_out;
+  const char *extensao_in;
+  char *caminho_in, *caminho_out, *extensao_out;
   bool deve_descomprimir;
 
   // Inicializa as variáveis que precisam ser limpadas/desalocadas
   ret = EXIT_FAILURE;
+  extensao_out = NULL;
+  caminho_out = NULL;
   arquivo_in = NULL;
   arquivo_out = NULL;
 
   configurar_terminal();
 
   // Posibilidades válidas:
-  // argv = {"./huffman", "comprimir", "dados.txt", "dados.huff"}
-  // argv = {"./huffman", "descomprimir", "dados.huff", "dados.txt"}
+  // argv = {"./huffman", "dados.txt"}
+  // argv = {"./huffman", "dados.huff"}
 
-  if (argc != 4) {
+  if (argc != 2) {
     // Número incorreto de argumentos
     printf(MSG_USO);
     goto retorno;
   }
 
-  acao = argv[1];
-  caminho_in = argv[2];
-  caminho_out = argv[3];
+  caminho_in = argv[1];
+  extensao_in = encontrar_extensao(caminho_in);
+  deve_descomprimir = !strcmp(extensao_in, "huff");
 
-  if (!strcmp(acao, "comprimir")) {
-    deve_descomprimir = false;
-  } else if (!strcmp(acao, "descomprimir")) {
-    deve_descomprimir = true;
-  } else {
-    // Ação desconhecida
-    printf(MSG_USO);
-    goto retorno;
+  if (!deve_descomprimir) {
+    if (strlen(extensao_in) > 6) {
+      fprintf(stderr, "A extensão do arquivo é muito longa\n");
+      goto retorno;
+    }
+
+    // Usa strdup para simplificar a desalocação do outro caso
+    extensao_out = strdup("huff");
   }
 
   arquivo_in = fopen(caminho_in, "rb");
@@ -59,6 +63,14 @@ int main(int argc, char *argv[]) {
     goto retorno;
   }
 
+  if (deve_descomprimir) {
+    // Lê a extensão e volta para o começo do arquivo
+    extensao_out = ler_extensao(arquivo_in);
+    fseek(arquivo_in, 0, SEEK_SET);
+  }
+
+  caminho_out = trocar_extensao(caminho_in, extensao_out);
+
   arquivo_out = fopen(caminho_out, "wb");
   if (!arquivo_out) {
     perror("Não foi possível abrir o arquivo de saída");
@@ -66,14 +78,24 @@ int main(int argc, char *argv[]) {
   }
 
   if (deve_descomprimir) {
+    printf("Descomprimindo\n");
     descomprimir(arquivo_in, arquivo_out);
   } else {
-    comprimir(arquivo_in, arquivo_out);
+    printf("Comprimindo\n");
+    comprimir(arquivo_in, arquivo_out, extensao_in);
   }
 
   ret = EXIT_SUCCESS;
 
 retorno:
+  if (extensao_out) {
+    free(extensao_out);
+  }
+
+  if (caminho_out) {
+    free(caminho_out);
+  }
+
   if (arquivo_in) {
     fclose(arquivo_in);
   }

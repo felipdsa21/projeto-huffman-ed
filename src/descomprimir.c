@@ -7,13 +7,17 @@
 void descomprimir(FILE *arquivo_in, FILE *arquivo_out) {
   ArvoreBin *arvore;
   // uint16_t tamanho_arvore;
-  uint8_t cabecalho[2], lixo;
+  uint8_t cabecalho[2], tamanho_extensao, lixo;
 
   fread(&cabecalho, 1, sizeof(cabecalho), arquivo_in);
   lixo = cabecalho[0] >> 5;
   // tamanho_arvore = (uint16_t)((cabecalho[0] & 0x1F) << 8) | cabecalho[1];
 
   arvore = ler_arvore_preordem(arquivo_in);
+
+  // Pula a extensão, já lida anteriormente
+  tamanho_extensao = (uint8_t)fgetc(arquivo_in) >> 5;
+  fseek(arquivo_in, tamanho_extensao, SEEK_CUR);
 
   if (arvore_bin_e_folha(arvore)) {
     // Caso especial de existir apenas um tipo de caractere (repetido ou não) no arquivo

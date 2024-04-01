@@ -5,6 +5,7 @@
 #include "comprimir.h"
 #include "descomprimir.h"
 #include "estruturas.h"
+#include "extensoes.h"
 #include "utils.h"
 
 #define TAMANHO_ARRAY(x) (sizeof(x) / sizeof(*(x)))
@@ -19,10 +20,10 @@ typedef struct ArquivoTeste {
 } ArquivoTeste;
 
 const ArquivoTeste arquivos_teste[] = {
-  {"data/a10.txt", "data/a10.txt.huff"},
-  {"data/abcdef.txt", "data/abcdef.txt.huff"},
-  {"data/flaflu.mp3", "data/flaflu.mp3.huff"},
-  {"data/sky.jpg", "data/sky.jpg.huff"},
+  {"data/a10.txt", "data/a10.huff"},
+  {"data/abcdef.txt", "data/abcdef.huff"},
+  {"data/flaflu.mp3", "data/flaflu.huff"},
+  {"data/sky.jpg", "data/sky.huff"},
 };
 
 void testar_arvore_bin() {
@@ -96,6 +97,46 @@ void testar_fila_prio() {
   fila_prio_desalocar(fila);
 }
 
+void testar_trocar_extensao(const char *caminho, const char *extensao, const char *caminho_esperado) {
+  char *novo_caminho;
+
+  novo_caminho = trocar_extensao(caminho, extensao);
+  CU_ASSERT_STRING_EQUAL(novo_caminho, caminho_esperado);
+  free(novo_caminho);
+}
+
+void testar_ler_extensao(const char *caminho, const char *extensao_esperada) {
+  FILE *arquivo;
+  char *extensao;
+
+  arquivo = fopen(caminho, "rb");
+  extensao = ler_extensao(arquivo);
+  CU_ASSERT_STRING_EQUAL(extensao, extensao_esperada);
+
+  free(extensao);
+  fclose(arquivo);
+}
+
+void testar_extensoes() {
+  size_t i;
+
+  CU_ASSERT_STRING_EQUAL(encontrar_extensao("arquivo"), "");
+  CU_ASSERT_STRING_EQUAL(encontrar_extensao("arquivo2."), "");
+  CU_ASSERT_STRING_EQUAL(encontrar_extensao("arquivo_a.txt"), "txt");
+  CU_ASSERT_STRING_EQUAL(encontrar_extensao("arquivo_b.huff"), "huff");
+
+  testar_trocar_extensao("arquivo.txt", "huff", "arquivo.huff");
+  testar_trocar_extensao("arquivo2", "txt", "arquivo2.txt");
+  testar_trocar_extensao("arquivo_a.txt", "txt", "arquivo_a.txt");
+  testar_trocar_extensao("arquivo_b.", "txt", "arquivo_b.txt");
+  testar_trocar_extensao("arquivo_c.txt", "", "arquivo_c");
+  testar_trocar_extensao("arquivo3.", "", "arquivo3");
+
+  for (i = 0; i < TAMANHO_ARRAY(arquivos_teste); i++) {
+    testar_ler_extensao(arquivos_teste[i].caminho_out, encontrar_extensao(arquivos_teste[i].caminho_in));
+  }
+}
+
 void comparar_arquivos(FILE *arquivo1, FILE *arquivo2) {
   int caractere, caractere_esperado;
 
@@ -130,7 +171,7 @@ void testar_huffman_arquivo(
   if (deve_descomprimir) {
     descomprimir(arquivo_in, arquivo_out);
   } else {
-    comprimir(arquivo_in, arquivo_out);
+    comprimir(arquivo_in, arquivo_out, encontrar_extensao(caminho_in));
   }
 
   comparar_arquivos(arquivo_out, arquivo_out_esperado);
@@ -171,9 +212,8 @@ int main() {
   }
 
   Caso casos[] = {
-    {"Árvore binária", testar_arvore_bin},
-    {"Fila de prioridade", testar_fila_prio},
-    {"Comprimir", testar_comprimir},
+    {"Árvore binária", testar_arvore_bin}, {"Fila de prioridade", testar_fila_prio},
+    {"Extensões", testar_extensoes},       {"Comprimir", testar_comprimir},
     {"Descomprimir", testar_descomprimir},
   };
 
